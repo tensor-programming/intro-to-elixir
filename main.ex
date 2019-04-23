@@ -1,164 +1,82 @@
-## Run Code in IEX (Interactive Elixir)
+defmodule Playground do
+  def area_of_circle!(x, y), do: x * y
 
-## Numbers - Integers and Floats
+  def area(x, y) do
+    x * y
+  end
 
-2 + 3
-3 * 4
-3 - 5
-x = 10
-## 5.0
-x / 2
+  ## Playground.Circle
+  defmodule Circle do
+    def area(r) do
+      3.14159 * r * r
+    end
+  end
 
-# 255
-0xFF
+  def run, do: IO.puts("Run")
 
-3.14159
-
-3.0e-2
-
-div(5, 2)
-rem(5, 2)
-
-99_999_999_999_999_999_999_999_999_999_999_999_999_999_123_871_293_871_902_387_102 +
-  99_999_999_999_999_999_999_999_999_999_999_999_999_999_123_871_293_871_902_387_102
-
-## 1000000
-1_000_000
-
-## Atoms
-
-:atoms
-
-:"an atom"
-
-:"12387 &*^#2"
-
-var = :atom
-
-## Aliases
-
-AModule
-# true
-:"Elixir.AModule" == AModlue
-
-alias IO, as: MyIO
-
-MyIO.puts("Hello" == IO.puts("Hello"))
-
-## Booleans and nil
-
-true
-false
-true
-false
-
-# true
-true == true
-# true
-false == false
-
-true and false
-true or false
-not true
-
-nil
-nil
-nil == nil
-
-if 10 do
-  IO.puts("true")
+  def run do
+    IO.puts("Run")
+  end
 end
 
-# prints true
+### in IEX
 
-if nil do
-  IO.puts("true")
-end
+s = fn x -> x * x end
+s.(3)
+x = fn x -> IO.puts(x) end
+x = &IO.puts/1
+x.("Hello")
 
-# get back nil
+Enum.each([1, 2, 3], x)
 
-# short circuit
-nil || false || 4 || true
-true && 5
-!5
-nil && 5
-true && 5 && nil && false
+Enum.each([1, 2, 3], fn x -> IO.puts(x * x) end)
 
-## Tuples
+lambda = fn x, y, z -> z * x * y end
+lambda = &(&1 * &2 * &3)
+lambda.(2, 3, 4)
 
-cat = {"Jazzpurr", 12}
-age = elem(cat, 1)
-put_elem(cat, 1, 13)
-cat = put_elem(cat, 1, 23)
+outside = 10
+lambda = fn -> IO.puts(outside) end
 
-## Lists
+lambda.()
+outside = 200
+lambda.()
 
-numbers = [1, 2, 3, 4]
-length(numbers)
-Enum.at(numbers, 5)
-Enum.at(numbers, 3)
-3 in numbers
-5 in numbers
+## for pid start the observer
+:observer.start()
 
-List.replace_at(numbers, 0, 12)
-# [12, 2, 3, 4]
-List.insert_at(numbers, 3, 13)
-List.insert_at(numbers, -1, 13)
+range = 1..10
+5 in range
 
-[1, 2, 3] ++ [4, 5]
-[head | tail] = [1, 2, 3, 4, 5, 6, 7]
-# head = 1
-# tail = [2, 3, 4, 5, 6, 7]
+Enum.each(range, &IO.puts/1)
 
-[1 | [2 | [3 | [4 | [5 | [6 | [7 | []]]]]]]]
+keyword = [{:a, 1}, {:b, 2}, {:c, 3}]
+### [a: 1, b: 2, c: 3]
+Keyword.get(keyword, :b)
+keyword[:a]
 
-hd(numbers)
-tl(numbers)
+alpha = MapSet.new([:a, :b, :c])
+MapSet.member?(alpha, :c)
+alpha = MapSet.put(alpha, :d)
 
-alist = [15, :atom, true]
-[:first | atlist]
-# [:first, 15, :atom, true]
+date = ~D[2019-08-21]
+date.year
+date.month
 
-## Maps
+time = ~T[11:32:15.000032]
+time.hour
+time.minute
 
-empty = %{}
-sqrs = %{1 => 1, 2 => 4, 3 => 9}
+datetime = ~N[2019-08-21 11:32:15.000032]
+datetime.year
+datetime.minute
 
-sqrs[1]
-sqrs[2]
+datetime = DateTime.from_naive!(datetime, "Etc/UTC")
+datetime.time_zone
 
-Map.get(sqrs, 3)
-Map.get(sqrs, 5)
-
-cat = %{name: "Jazzpurr", age: 12}
-cat.age
-cat.name
-cat[:name]
-cat[:age]
-
-older_cat = %{cat | age: 15}
-older_cat.age
-
-## Binaries and Bitstrings
-<<1, 2, 3>>
-# <<0>>
-<<256>>
-# <<1>>
-<<257>>
-<<256::16>>
-<<1::4, 15::4>>
-<<1, 2>> <> <<3, 4>>
-
-## Strings and Charlist
-"This is a String"
-"Add together #{3 + 4}"
-"\r \n \" \\"
-
-~s("This is a string!")
-~S(This is a String!)
-
-'ABC' == [65, 66, 67]
-'sum: #{3 + 5}'
-~c(Character Sigil)
-# 'A String'
-String.to_charlist("A String")
+iolist = [[['H', 'e'], "llo,"], " worl", "d!"]
+iolist = []
+iolist = [iolist, "This "]
+iolist = [iolist, "is "]
+iolist = [iolist, "an "]
+iolist = [iolist, "IO List!"]
