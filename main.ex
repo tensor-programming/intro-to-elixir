@@ -1,82 +1,73 @@
-defmodule Playground do
-  def area_of_circle!(x, y), do: x * y
+x = 10
 
-  def area(x, y) do
-    x * y
+person = {"John", 25}
+
+{name, age} = person
+{name, age} = {"John", 25}
+
+
+
+{date, time} = :calendar.local_time()
+{y, m, d} = date
+{h, min, sec} = time
+
+{a, b} = "Won't match"
+
+1 = 1
+{:rectangle, width, height} = {:rectangle, 10, 20}
+
+{:ok, contents} = File.read("example.txt")
+{:error, reason} = File.read("example.txt")
+
+{_, time} = :calendar.local_time()
+{_date, time} = :calendar.local_time()
+
+{_, {hour, _, _}} = :calendar.local_time()
+
+{a, a, a} = {1, 1, 1}
+{b, b, b} = {1, 2, 3}
+
+x = 10
+
+{^x, _} = {10, "Hello"}
+{^x, _} = {11, "Hello"}
+{x, _} = {11, "Hello"}
+
+[f, s, t] = [1, 2, 3]
+[1, s, t] = [1, 2, 3]
+[f, _, t] = [1, 2, 3]
+
+[head | tail] = [1, 2, 3, 4, 5]
+[head | _] = [1, 2, 3, 4, 5, 6, 7]
+[_ | tail] = [1, 2, 3, 4, 5, 6, 7]
+[min | _] Enum.sort([7, 9, 2, 4])
+
+%{name: name, age: age} = %{name: "John", age: 25}
+%{age: age} = %{name: "John", age: 25}
+
+<<a, b, c>> = "ABC"
+
+[_, {name, _}, _] = [{"John", 17}, {"Jane", 26}, {"Adam", 30}]
+
+a = b = 1 + 3
+a = (b = 1 + 3)
+
+date_time = {_, {hour, _, _}} = :calendar.local_time()
+
+defmodule Geometry do
+  def area({:rectangle, a, b}) do
+    a * b
   end
 
-  ## Playground.Circle
-  defmodule Circle do
-    def area(r) do
-      3.14159 * r * r
-    end
+  def area({:square, a}) do
+    a * a
   end
 
-  def run, do: IO.puts("Run")
+  def area({:circle, r}) do
+    r * r * 3.14159
+  end
 
-  def run do
-    IO.puts("Run")
+  def area(unknown) do
+    {:error, {:unknown_shape, unknown}}
   end
 end
-
-### in IEX
-
-s = fn x -> x * x end
-s.(3)
-x = fn x -> IO.puts(x) end
-x = &IO.puts/1
-x.("Hello")
-
-Enum.each([1, 2, 3], x)
-
-Enum.each([1, 2, 3], fn x -> IO.puts(x * x) end)
-
-lambda = fn x, y, z -> z * x * y end
-lambda = &(&1 * &2 * &3)
-lambda.(2, 3, 4)
-
-outside = 10
-lambda = fn -> IO.puts(outside) end
-
-lambda.()
-outside = 200
-lambda.()
-
-## for pid start the observer
-:observer.start()
-
-range = 1..10
-5 in range
-
-Enum.each(range, &IO.puts/1)
-
-keyword = [{:a, 1}, {:b, 2}, {:c, 3}]
-### [a: 1, b: 2, c: 3]
-Keyword.get(keyword, :b)
-keyword[:a]
-
-alpha = MapSet.new([:a, :b, :c])
-MapSet.member?(alpha, :c)
-alpha = MapSet.put(alpha, :d)
-
-date = ~D[2019-08-21]
-date.year
-date.month
-
-time = ~T[11:32:15.000032]
-time.hour
-time.minute
-
-datetime = ~N[2019-08-21 11:32:15.000032]
-datetime.year
-datetime.minute
-
-datetime = DateTime.from_naive!(datetime, "Etc/UTC")
-datetime.time_zone
-
-iolist = [[['H', 'e'], "llo,"], " worl", "d!"]
-iolist = []
-iolist = [iolist, "This "]
-iolist = [iolist, "is "]
-iolist = [iolist, "an "]
-iolist = [iolist, "IO List!"]
