@@ -1,164 +1,106 @@
-## Run Code in IEX (Interactive Elixir)
+defmodule Playground do
+  for x <- [1, 2, 3] do
+    x * x
+  end
 
-## Numbers - Integers and Floats
+  for x <- [1, 2, 3], y <- [1, 2, 3], do: {x, y, x * y}
 
-2 + 3
-3 * 4
-3 - 5
-x = 10
-## 5.0
-x / 2
+  table =
+    for x <- 1..9, y <- 1..9, into: %{} do
+      {{x, y}, x * y}
+    end
 
-# 255
-0xFF
-
-3.14159
-
-3.0e-2
-
-div(5, 2)
-rem(5, 2)
-
-99_999_999_999_999_999_999_999_999_999_999_999_999_999_123_871_293_871_902_387_102 +
-  99_999_999_999_999_999_999_999_999_999_999_999_999_999_123_871_293_871_902_387_102
-
-## 1000000
-1_000_000
-
-## Atoms
-
-:atoms
-
-:"an atom"
-
-:"12387 &*^#2"
-
-var = :atom
-
-## Aliases
-
-AModule
-# true
-:"Elixir.AModule" == AModlue
-
-alias IO, as: MyIO
-
-MyIO.puts("Hello" == IO.puts("Hello"))
-
-## Booleans and nil
-
-true
-false
-true
-false
-
-# true
-true == true
-# true
-false == false
-
-true and false
-true or false
-not true
-
-nil
-nil
-nil == nil
-
-if 10 do
-  IO.puts("true")
+  table =
+    for x <- 1..9, y <- 1..9, x < y, into: %{} do
+      {{x, y}, x * y}
+    end
 end
 
-# prints true
+# defmodule Playground do
+# Enum.map([1, 2, 3], fn x -> x * 2 end)
+# [2, 4, 6]
 
-if nil do
-  IO.puts("true")
-end
+# Enum.filter(
+#  [1, 2, 3],
+#  fn x -> rem(x, 2) == 1 end
+#  )
+# [1, 3]
 
-# get back nil
+#   Enum.reduce([1,2,3,4,5], 0, fn x, y -> x + y end)
+#   Enum.reduce([1,2,3,4,5], 10, fn x, y -> x + y end)
+# end
 
-# short circuit
-nil || false || 4 || true
-true && 5
-!5
-nil && 5
-true && 5 && nil && false
+## x = 0, y = 1 => 1
+## x = 1, y = 2 => 3
+## x = 3, y = 3 => 6
+## x = 6, y = 4 => 10
+## x = 10, y = 5 => 15
 
-## Tuples
+## x = 10, y = 1 => 11
+## x = 11, y = 2 => 13
+## x = 13, y = 3 => 16
+## x = 16, y = 4 => 20
+## x = 20, y = 5 => 25
 
-cat = {"Jazzpurr", 12}
-age = elem(cat, 1)
-put_elem(cat, 1, 13)
-cat = put_elem(cat, 1, 23)
+# defmodule Playground do
+#   def start(n) do
+#     start = :os.system_time(:seconds)
+#     fib = getNumber(n)
+#     finish = :os.system_time(:seconds)
+#     diff = finish - start
+#     IO.puts("Fib is #{fib}")
+#     IO.puts("took: #{diff}")
+#   end
 
-## Lists
+#   def getNumber(n) when n < 0, do: :error
+#   def getNumber(n), do: getNumber(n, 1, 0)
+#   defp getNumber(0, _, result), do: result
+#   defp getNumber(n, next, result), do: getNumber(n - 1, next + result, next)
+# end
 
-numbers = [1, 2, 3, 4]
-length(numbers)
-Enum.at(numbers, 5)
-Enum.at(numbers, 3)
-3 in numbers
-5 in numbers
+## getNumber(10) -> getNumber(10, 1, 0)
+## getNumber(9, 1, 1) -> getNumber(8, 2, 1)
+## getNumber(7, 3, 2) -> getNumber(6, 5, 3)
+## getNumber(5, 8, 5) -> getNumber(4, 13, 8)
+## getNumber(3, 21, 13) -> getNumber(2, 34, 21)
+## getNumber(1, 55, 34) -> getNumber(0, _, 55) => 55
 
-List.replace_at(numbers, 0, 12)
-# [12, 2, 3, 4]
-List.insert_at(numbers, 3, 13)
-List.insert_at(numbers, -1, 13)
+## getNumber(5) -> getNumber(4) + getNumber(3)
+## (getNumber(3) + getNumber(2)) + (getNumber(2) + getNumber(1) [1])
+## (1 + 0 + 1) + (1 + 0)  + (1 + 0) + 1 = 5
+## getNumber(6) -> getNumber(5) [5] + getNumber(4)
 
-[1, 2, 3] ++ [4, 5]
-[head | tail] = [1, 2, 3, 4, 5, 6, 7]
-# head = 1
-# tail = [2, 3, 4, 5, 6, 7]
+# defmodule Playground do
+#   def sum([]), do: 0
 
-[1 | [2 | [3 | [4 | [5 | [6 | [7 | []]]]]]]]
+#   def sum([h | t]) do
+#     h + sum(t)
+#   end
+# end
 
-hd(numbers)
-tl(numbers)
+# def loop_forever do
+#   loop_forever()
+# end
 
-alist = [15, :atom, true]
-[:first | atlist]
-# [:first, 15, :atom, true]
+## sum([1, 2, 3, 4, 5]) => h = 1, t = [2, 3, 4, 5]
+## 1 + sum([2, 3, 4, 5]) => h = 2, t = [3, 4, 5]
+## 1 + 2 + sum([3, 4, 5]) => h = 3, t = [4, 5]
+## 1 + 2 + 3 + sum([4, 5]) => h = 4, t = [5]
+## 1 + 2 + 3 + 4 + sum([5]) => h = 5, t = []
+## 1 + 2 + 3 + 4 + 5 + sum([])
 
-## Maps
+# defmodule Playground do
+#   def print(0), do: :ok
 
-empty = %{}
-sqrs = %{1 => 1, 2 => 4, 3 => 9}
+#   def print(n) do
+#     print(n - 1)
+#     IO.puts(n)
+#   end
+# end
 
-sqrs[1]
-sqrs[2]
-
-Map.get(sqrs, 3)
-Map.get(sqrs, 5)
-
-cat = %{name: "Jazzpurr", age: 12}
-cat.age
-cat.name
-cat[:name]
-cat[:age]
-
-older_cat = %{cat | age: 15}
-older_cat.age
-
-## Binaries and Bitstrings
-<<1, 2, 3>>
-# <<0>>
-<<256>>
-# <<1>>
-<<257>>
-<<256::16>>
-<<1::4, 15::4>>
-<<1, 2>> <> <<3, 4>>
-
-## Strings and Charlist
-"This is a String"
-"Add together #{3 + 4}"
-"\r \n \" \\"
-
-~s("This is a string!")
-~S(This is a String!)
-
-'ABC' == [65, 66, 67]
-'sum: #{3 + 5}'
-~c(Character Sigil)
-# 'A String'
-String.to_charlist("A String")
+## print(10) => 10 -> print(9)
+## print(9) => 9 -> print(8)
+## ...
+## print(2) => 2 -> print(1)
+## print(1) => 1 -> print(0)
+## print(0) => :ok
