@@ -1,55 +1,70 @@
-defmodule Fraction do
-  defstruct x: nil, y: nil
-
-  def new(x, y) do
-    %Fraction{x: x, y: y}
+defmodule Playground do
+  def start do
+    spawn(fn -> loop(0) end)
   end
 
-  def value(%Fraction{x: x, y: y}) do
-    x / y
+  def view(server_pid) do
+    send(server_pid, {:view, self()})
+
+    receive do
+      {:response, value} ->
+        value
+    end
   end
 
-  # def value(fract) do
-  #   fract.x / fract.y
-  # end
+  def add(server_pid, value), do: send(server_pid, {:add, value})
+  def sub(server_pid, value), do: send(server_pid, {:sub, value})
+  def mult(server_pid, value), do: send(server_pid, {:mult, value})
+  def div(server_pid, value), do: send(server_pid, {:div, value})
 
-  def add(%Fraction{x: x1, y: y1}, %Fraction{x: x2, y: y2}) do
-    new(
-      x1 * y2 + x2 * y1,
-      y1 * y2
-    )
+  defp loop(current_value) do
+    new_value =
+      receive do
+        {:view, caller_pid} ->
+          send(caller_pid, {:response, current_value})
+          current_value
+
+        {:add, value} ->
+          current_value + value
+
+        {:sub, value} ->
+          current_value - value
+
+        {:mult, value} ->
+          current_value * value
+
+        {:div, value} ->
+          current_value / value
+
+        _ ->
+          IO.puts("Invalid Message")
+      end
+
+    loop(new_value)
   end
 end
 
-## 1/2 + 1/4 = [(1 * 4) + (1 * 2)] / (2 * 4) = 6 / 8 = 3 / 4
+# pool = Enum.map(1..100, fn _ -> Playground.start() end)
 
-
-
-# defmodule TaskList do
-#   def new(), do: MultiStorage.new()
-
-#   def add_task(task_list, entry) do
-#     MultiStorage.add(task_list, entry.date, entry)
-#   end
-
-#   def get_tasks(task_list, date) do
-#     MultiStorage.get(task_list, date)
-#   end
+# sync_fn = fn x ->
+#   Process.sleep(1000)
+#   "#{x} return"
 # end
 
-# defmodule MultiStorage do
-#   def new(), do: %{}
+# Enum.map(1..5, &sync_fn.("test #{&1}"))
 
-#   def add(storage, key, value) do
-#     Map.update(
-#       storage,
-#       key,
-#       [value],
-#       fn values -> [value | values] end
-#     )
-#   end
-
-#   def get(storage, key) do
-#     Map.get(storage, key, [])
-#   end
+# async_fn = fn x ->
+#   spawn(fn -> IO.puts(sync_fn.("test #{x}")) end)
 # end
+
+# Enum.each(1..5, async_fn.("#{&1}"))
+
+# send(self(), {:msg, 10})
+
+# result =
+#   receive do
+#     {:msg, x} ->
+#       x * x
+#   after
+#     5000 -> IO.puts("Message not received")
+#   end
