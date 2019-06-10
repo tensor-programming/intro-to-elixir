@@ -1,55 +1,57 @@
-defmodule Fraction do
-  defstruct x: nil, y: nil
+defmodule TaskList do
+  defstruct id: 0, entries: %{}
 
-  def new(x, y) do
-    %Fraction{x: x, y: y}
-  end
-
-  def value(%Fraction{x: x, y: y}) do
-    x / y
-  end
-
-  # def value(fract) do
-  #   fract.x / fract.y
-  # end
-
-  def add(%Fraction{x: x1, y: y1}, %Fraction{x: x2, y: y2}) do
-    new(
-      x1 * y2 + x2 * y1,
-      y1 * y2
+  def new() do
+    Enum.reduce(
+      entries,
+      %TaskList{},
+      fn entry, acc -> add_task(acc, entry) end
     )
   end
+
+  def add_task(task_list, entry) do
+    entry = Map.put(entry, :id, task_list.id)
+
+    new_entries =
+      Map.put(
+        task_list.entries,
+        task_list.id,
+        entry
+      )
+
+    %TaskList{
+      task_list
+      | entries: new_entries,
+        id: task_list.id + 1
+    }
+  end
+
+  def get_tasks(task_list, date) do
+    task_list.entries
+    |> Stream.filter(fn {_, entry} -> entry.date == date end)
+    |> Enum.map(fn {_, entry} -> entry end)
+  end
+
+  def update_task(task_list, %{} = new_entry) do
+    update_task(task_list, new_entry.id, fn _ -> new_entry end)
+  end
+
+  def update_task(task_list, entry_id, update_fn) do
+    case Map.fetch(task_list.entries, entry_id) do
+      :error ->
+        task_list
+
+      {:ok, old_entry} ->
+        new_entry = update_fn.(old_entry)
+
+        new_entries =
+          Map.put(
+            task_list.entries,
+            new_entry.id,
+            new_entry,
+          )
+
+        %TaskList{task_list | entries: new_entries}
+    end
+  end
 end
-
-## 1/2 + 1/4 = [(1 * 4) + (1 * 2)] / (2 * 4) = 6 / 8 = 3 / 4
-
-
-
-# defmodule TaskList do
-#   def new(), do: MultiStorage.new()
-
-#   def add_task(task_list, entry) do
-#     MultiStorage.add(task_list, entry.date, entry)
-#   end
-
-#   def get_tasks(task_list, date) do
-#     MultiStorage.get(task_list, date)
-#   end
-# end
-
-# defmodule MultiStorage do
-#   def new(), do: %{}
-
-#   def add(storage, key, value) do
-#     Map.update(
-#       storage,
-#       key,
-#       [value],
-#       fn values -> [value | values] end
-#     )
-#   end
-
-#   def get(storage, key) do
-#     Map.get(storage, key, [])
-#   end
-# end
