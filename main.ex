@@ -1,7 +1,7 @@
 defmodule TaskList do
   defstruct id: 0, entries: %{}
 
-  def new() do
+  def new(entries \\ []) do
     Enum.reduce(
       entries,
       %TaskList{},
@@ -48,7 +48,7 @@ defmodule TaskList do
           Map.put(
             task_list.entries,
             new_entry.id,
-            new_entry,
+            new_entry
           )
 
         %TaskList{task_list | entries: new_entries}
