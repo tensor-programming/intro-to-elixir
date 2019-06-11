@@ -1,164 +1,151 @@
-## Run Code in IEX (Interactive Elixir)
+defmodule GenericServer do
+  def start(module) do
+    spawn(fn ->
+      init_state = module.init()
+      loop(module, init_state)
+    end)
+  end
 
-## Numbers - Integers and Floats
+  defp loop(module, current_state) do
+    receive do
+      {:call, request, caller} ->
+        {response, new_state} =
+          module.handle_call(
+            request,
+            current_state
+          )
 
-2 + 3
-3 * 4
-3 - 5
-x = 10
-## 5.0
-x / 2
+        send(caller, {:response, response})
+        loop(module, new_state)
 
-# 255
-0xFF
+      {:cast, request} ->
+        new_state =
+          module.handle_cast(
+            request,
+            current_state
+          )
 
-3.14159
+        loop(module, new_state)
+    end
+  end
 
-3.0e-2
+  def call(server_pid, request) do
+    send(server_pid, {:call, request, self()})
+    ## send(server_pid, {:call, {:get_tasks, date}, self()})
 
-div(5, 2)
-rem(5, 2)
+    receive do
+      {:response, response} ->
+        response
+    end
+  end
 
-99_999_999_999_999_999_999_999_999_999_999_999_999_999_123_871_293_871_902_387_102 +
-  99_999_999_999_999_999_999_999_999_999_999_999_999_999_123_871_293_871_902_387_102
-
-## 1000000
-1_000_000
-
-## Atoms
-
-:atoms
-
-:"an atom"
-
-:"12387 &*^#2"
-
-var = :atom
-
-## Aliases
-
-AModule
-# true
-:"Elixir.AModule" == AModlue
-
-alias IO, as: MyIO
-
-MyIO.puts("Hello" == IO.puts("Hello"))
-
-## Booleans and nil
-
-true
-false
-true
-false
-
-# true
-true == true
-# true
-false == false
-
-true and false
-true or false
-not true
-
-nil
-nil
-nil == nil
-
-if 10 do
-  IO.puts("true")
+  def cast(server_pid, request) do
+    send(server_pid, {:cast, request})
+  end
 end
 
-# prints true
+defmodule TaskList do
+  defstruct id: 0, entries: %{}
 
-if nil do
-  IO.puts("true")
+  def new(entries \\ []) do
+    Enum.reduce(
+      entries,
+      %TaskList{},
+      fn entry, acc -> add_task(acc, entry) end
+    )
+  end
+
+  def add_task(task_list, entry) do
+    entry = Map.put(entry, :id, task_list.id)
+
+    new_entries =
+      Map.put(
+        task_list.entries,
+        task_list.id,
+        entry
+      )
+
+    %TaskList{
+      task_list
+      | entries: new_entries,
+        id: task_list.id + 1
+    }
+  end
+
+  def get_tasks(task_list, date) do
+    task_list.entries
+    |> Stream.filter(fn {_, entry} -> entry.date == date end)
+    |> Enum.map(fn {_, entry} -> entry end)
+  end
+
+  def update_task(task_list, %{} = new_entry) do
+    update_task(task_list, new_entry.id, fn _ -> new_entry end)
+  end
+
+  def update_task(task_list, entry_id, update_fn) do
+    case Map.fetch(task_list.entries, entry_id) do
+      :error ->
+        task_list
+
+      {:ok, old_entry} ->
+        new_entry = update_fn.(old_entry)
+
+        new_entries =
+          Map.put(
+            task_list.entries,
+            new_entry.id,
+            new_entry
+          )
+
+        %TaskList{task_list | entries: new_entries}
+    end
+  end
 end
 
-# get back nil
+defmodule TaskServer do
+  ## client side
 
-# short circuit
-nil || false || 4 || true
-true && 5
-!5
-nil && 5
-true && 5 && nil && false
+  def start do
+    GenericServer.start(TaskServer)
+  end
 
-## Tuples
+  def add_task(server_pid, new_entry) do
+    GenericServer.cast(server_pid, {:add_task, new_entry})
+  end
 
-cat = {"Jazzpurr", 12}
-age = elem(cat, 1)
-put_elem(cat, 1, 13)
-cat = put_elem(cat, 1, 23)
+  def get_tasks(server_pid, date) do
+    GenericServer.call(server_pid, {:get_tasks, date})
+  end
 
-## Lists
+  ## server
+  def init do
+    TaskList.new()
+  end
 
-numbers = [1, 2, 3, 4]
-length(numbers)
-Enum.at(numbers, 5)
-Enum.at(numbers, 3)
-3 in numbers
-5 in numbers
+  def handle_call({:get_tasks, date}, task_list) do
+    {TaskList.get_tasks(task_list, date), task_list}
+  end
 
-List.replace_at(numbers, 0, 12)
-# [12, 2, 3, 4]
-List.insert_at(numbers, 3, 13)
-List.insert_at(numbers, -1, 13)
+  def handle_cast({:add_task, new_entry}, task_list) do
+    TaskList.add_task(task_list, new_entry)
+  end
+end
 
-[1, 2, 3] ++ [4, 5]
-[head | tail] = [1, 2, 3, 4, 5, 6, 7]
-# head = 1
-# tail = [2, 3, 4, 5, 6, 7]
+defmodule Server do
+  def start do
+    Process.register(GenericServer.start(Server), :server)
+  end
 
-[1 | [2 | [3 | [4 | [5 | [6 | [7 | []]]]]]]]
+  def init do
+    []
+  end
 
-hd(numbers)
-tl(numbers)
+  def call_server(msg) do
+    GenericServer.call(:server, {:request, "Message #{msg}"})
+  end
 
-alist = [15, :atom, true]
-[:first | atlist]
-# [:first, 15, :atom, true]
-
-## Maps
-
-empty = %{}
-sqrs = %{1 => 1, 2 => 4, 3 => 9}
-
-sqrs[1]
-sqrs[2]
-
-Map.get(sqrs, 3)
-Map.get(sqrs, 5)
-
-cat = %{name: "Jazzpurr", age: 12}
-cat.age
-cat.name
-cat[:name]
-cat[:age]
-
-older_cat = %{cat | age: 15}
-older_cat.age
-
-## Binaries and Bitstrings
-<<1, 2, 3>>
-# <<0>>
-<<256>>
-# <<1>>
-<<257>>
-<<256::16>>
-<<1::4, 15::4>>
-<<1, 2>> <> <<3, 4>>
-
-## Strings and Charlist
-"This is a String"
-"Add together #{3 + 4}"
-"\r \n \" \\"
-
-~s("This is a string!")
-~S(This is a String!)
-
-'ABC' == [65, 66, 67]
-'sum: #{3 + 5}'
-~c(Character Sigil)
-# 'A String'
-String.to_charlist("A String")
+  def handle_call({:request, msg}, _state) do
+    Process.sleep(1000)
+    {msg, []}
+  end
+end
